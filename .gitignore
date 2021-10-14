@@ -1,0 +1,5 @@
+# image files
+*.png
+
+# docx documentation
+*.docx 

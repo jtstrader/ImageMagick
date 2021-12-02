@@ -1,15 +1,15 @@
+#!/usr/bin/python3
 import cv2,subprocess,random,time
 
 # home directory
-directory = r'C:\Users\IST301\Desktop\IMPG\ImageMagick\Web'
+directory = r'/home/allen_j/Desktop/ImageMagick/Web'
 
 print(f"Starting dir: {directory}")
 
 # connect to camera
 #   cv2.CAP_DSHOW && .destroyAllWindows() erases
 #   async callback error 
-camera = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-cv2.destroyAllWindows()
+camera = cv2.VideoCapture(0)
 
 prev = -1
 
@@ -92,10 +92,8 @@ def applyEffect():
         edge()
     # input(f"post edit, choose: {choose}")
     # end of apply effect set image to new image
-    # run powershell command to force rename file to set new image
-    cmd = rf'Move-Item -Force -Path "C:\Users\IST301\Desktop\IMPG\ImageMagick\Web\image_n.png" -Destination "C:\Users\IST301\Desktop\IMPG\ImageMagick\Web\image_magick.png"'
-    subprocess.run(["powershell", "-Command", cmd])
-        
+    subprocess.call(rf'mv /home/allen_j/Desktop/ImageMagick/Web/image_n.png /home/allen_j/Desktop/ImageMagick/Web/image_magick.png', shell=True)
+    
 def main():
     # grab photo photos
     while True:
@@ -103,11 +101,11 @@ def main():
 
         # write image to current directory
         cv2.imwrite("image.png", frame)
-        cv2.imshow('IMPG Frame Grab', frame)
+        # cv2.imshow('IMPG Frame Grab', frame)
 
         # apply effect
         applyEffect()
         # cv2.waitKey(30) # wait 1 second
-        time.sleep(5)
+        time.sleep(3)
 main()
 

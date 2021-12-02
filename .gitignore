@@ -3,3 +3,6 @@
 
 # docx documentation
 *.docx 
+
+# ignore tester files
+test/

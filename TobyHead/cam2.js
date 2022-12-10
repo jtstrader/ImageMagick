@@ -38976,6 +38976,14 @@ function detectPoseInRealTime(video, net) {
   canvas.width = videoWidth;
   canvas.height = videoHeight;
 
+  var raisedFrameCount = 75;
+  var noRaisedFrameCount = 0;
+
+  /**
+   * Determines if ImageMagick mode is on. If set to `true`, do not place bear head/use wireframe.
+   */
+  var magickMode = false;
+
   async function poseDetectionFrame() {
     if (guiState.changeToArchitecture) {
       // Important to purge variables and free up GPU memory
@@ -39077,9 +39085,8 @@ function detectPoseInRealTime(video, net) {
 		
 		keypoints.color = ourColors[poseColorIndex];
 		poseColorIndex++;
-		
-		
-      if (score >= minPoseConfidence) {
+  
+      if (score >= minPoseConfidence && !magickMode) {
         if (guiState.output.showSkeleton) {
           (0, _demo_util.drawSkeleton)(keypoints, minPartConfidence, ctx);
         }
@@ -39088,6 +39095,42 @@ function detectPoseInRealTime(video, net) {
         }
         if (guiState.output.showBoundingBox) {
           (0, _demo_util.drawBoundingBox)(keypoints, ctx);
+        }
+      }
+      
+
+      // Draw ImageMagick options if the left wrist above the left shoulder
+      // Do not start ImageMagick if doing rainbow color mode
+      // Warning: this code is stupid but it will probably work
+      const check_imgmgck_mode = (keypoints) => {
+      return (keypoints[9].position.y < keypoints[5].position.y && keypoints[10].position.y > keypoints[6].position.y);
+      } 
+
+      // Use frame counters (app runs ~20 FPS) to count how long to display messages. Avoid using timeouts
+      // due to the page refreshing at 20 FPS to generate the wireframe.
+      if (check_imgmgck_mode(keypoints)) {
+        raisedFrameCount -= 1;
+        noRaisedFrameCount = 0;
+        console.log(raisedFrameCount);
+        ctx.font = "24px Arial";
+
+        if (raisedFrameCount <= 60 && !magickMode) {
+          if (raisedFrameCount >= 40) {
+            ctx.fillText(`ImageMagick Mode in 3`, 30, 30);
+          } else if (raisedFrameCount >= 20) {
+            ctx.fillText(`ImageMagick Mode in 2`, 30, 30);
+          } else if (raisedFrameCount > 0) {
+            ctx.fillText(`ImageMagick Mode in 1`, 30, 30);
+          } else if (raisedFrameCount <= 0) {
+            magickMode = true;
+          }
+        }
+      } else {
+        noRaisedFrameCount += 1;
+        
+        if (noRaisedFrameCount >= 30 && !magickMode) {
+          raisedFrameCount = 75;
+          noRaisedFrameCount = 0;
         }
       }
     });
